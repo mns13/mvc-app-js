@@ -3,14 +3,17 @@ const User = require('../models/User');
 exports.login = function(req, res){
   let user = new User(req.body);
   user.login().then(function(result){
-    req.session.user = {username: user.data.username}
-    res.send(result);
+    req.session.user = {username: user.data.username};
+    res.redirect('/');
   }).catch(function(e){
     res.send(e);
   });
 }
 
-exports.logout = function(){
+exports.logout = function(req, res){
+  req.session.destroy(function(){
+    res.redirect('/');
+  });
   
 }
 
@@ -30,5 +33,4 @@ exports.home = function(req, res){
   } else {
     res.render('home-guest');
   }
- 
 }
