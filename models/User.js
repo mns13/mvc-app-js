@@ -28,7 +28,15 @@ User.prototype.validate = function(){
   if(this.data.username.length > 0 && this.data.username < 5){this.errors.push("username must be at least 5 characters");}
 }
 
-
+User.prototype.login = function(callback){
+  this.cleanUp();
+  usersCollection.findOne({username: this.data.username}, (err, attemptedUser) => {
+    if(attemptedUser && attemptedUser.password == this.data.password){
+      callback("Congrats!!!");
+    }
+    callback("Wrong username/password!!!");
+  })
+}
 
 User.prototype.register = function(){
   // Validate Data
