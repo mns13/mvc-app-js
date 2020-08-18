@@ -1,5 +1,5 @@
 const bcrypt = require('bcryptjs');
-const usersCollection = require('../db').collection("users");
+const usersCollection = require('../db').db().collection("users");
 const validator = require("validator");
 let User = function(data){
   this.data = data;
@@ -25,6 +25,7 @@ User.prototype.validate = function(){
   if(this.data.email == ""){this.errors.push("Enter email");}
   if(this.data.email != "" && !validator.isEmail(this.data.email)){this.errors.push("Not Valide Email!");}
   if(this.data.password.length > 0 && this.data.password < 6){this.errors.push("Password must be at least 6 characters");}
+  if(this.data.password.length > 50){this.errors.push("Password cannot exceed 50 charachters");}
   if(this.data.password == ""){this.errors.push("Enter the password");}
   if(this.data.username.length > 0 && this.data.username < 5){this.errors.push("username must be at least 5 characters");}
 }
