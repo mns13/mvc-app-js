@@ -28,7 +28,19 @@ User.prototype.validate = function(){
   if(this.data.username.length > 0 && this.data.username < 5){this.errors.push("username must be at least 5 characters");}
 }
 
-
+User.prototype.login = function(){
+  return new Promise((resolve, reject) => {
+    this.cleanUp();
+    usersCollection.findOne({username: this.data.username}).then((attemptedUser) => {
+      if(attemptedUser && attemptedUser.password == this.data.password){
+        resolve("Congrats!!!");
+      }
+      reject("Wrong username / password!!!");
+    }).catch(function(){
+      reject("Please try again later");
+    });
+  });
+}
 
 User.prototype.register = function(){
   // Validate Data
