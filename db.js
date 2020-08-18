@@ -6,5 +6,5 @@ const mongodb = require('mongodb');
 mongodb.connect(process.env.CONNECTIONSTRING, {useNewUrlParser: true, useUnifiedTopology: true} ,function(err, client){
   module.exports = client.db();
   const app = require('./app');
-  app.listen(3000);
+  app.listen(process.env.PORT);
 });
