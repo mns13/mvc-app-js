@@ -15,6 +15,17 @@ exports.login = function(req, res){
   });
 }
 
+exports.mustBeLoggedIn = function(req, res, next){
+  if(req.session.user){
+    next();
+  } else {
+    req.flash("errors", "You must be logged in to perform that action!");
+    req.session.save(function(){
+      res.redirect('/');
+    })
+  }
+}
+
 exports.logout = function(req, res){
   req.session.destroy(function(){
     res.redirect('/');
