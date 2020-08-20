@@ -101,4 +101,44 @@ Follow.getFollowersById = function(id){
   })
 }
 
+
+Follow.getFollowingById = function(id){
+  return new Promise(async(resolve, reject)=>{
+    try {
+      let followings = await followsCollection.aggregate([
+        {$match: {authorId: id}},
+        {$lookup: {from: "users", localField: "followedId", foreignField: "_id", as: "userDoc"}},
+        {$project: {
+          username: {$arrayElemAt: ["$userDoc.username", 0]},
+          email: {$arrayElemAt: ["$userDoc.email", 0]}
+        }}
+      ]).toArray();
+      followings = followings.map(function(following){
+        let user = new User(following, true);
+        return {username: following.username, avatar: user.avatar};
+      });
+      resolve(followings);
+    } catch {
+      reject();
+    }
+  })
+}
+
+Follow.countFollowersById = function(id){
+  return new Promise(async(resolve, reject) => {
+    let followerCount = await followsCollection.countDocuments({followedId: id});
+    resolve(followerCount);
+  });
+}
+
+Follow.countFollowingById = function(id){
+  return new Promise(async(resolve, reject) => {
+    let followingCount = await followsCollection.countDocuments({authorId: id});
+    resolve(followingCount);
+  });
+}
+
+
+
+
 module.exports = Follow;
