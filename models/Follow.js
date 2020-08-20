@@ -13,9 +13,22 @@ let Follow = function(followedUsername, authorId){
 Follow.prototype.create = function(){
   return new Promise(async (resolve, reject) => {
     this.cleanUp();
-    await this.validate();
+    await this.validate("create");
     if(!this.errors.length){
      await  followsCollection.insertOne({followedId: this.followedId, authorId: new ObjectID(this.authorId)});
+     resolve();
+    } else {
+      reject(this.errors);
+    }
+  })
+}
+
+Follow.prototype.delete = function(){
+  return new Promise(async (resolve, reject) => {
+    this.cleanUp();
+    await this.validate("delete");
+    if(!this.errors.length){
+     await  followsCollection.deleteOne({followedId: this.followedId, authorId: new ObjectID(this.authorId)});
      resolve();
     } else {
       reject(this.errors);
@@ -29,7 +42,7 @@ Follow.prototype.cleanUp = function(){
   }
 }
 
-Follow.prototype.validate = async function(){
+Follow.prototype.validate = async function(action){
   // followed username must exists in database
   let followedAccount = await usersCollection.findOne({username: this.followedUsername});
   if(followedAccount){
@@ -37,8 +50,32 @@ Follow.prototype.validate = async function(){
   } else {
     this.errors.push("You can not follow a user that does not exists");
   }
+
+  let doesFollowAlreadyExists = await followsCollection.findOne({followedId: this.followedId, authorId: new ObjectID(this.authorId)});
+  if(action == "create"){
+    if(doesFollowAlreadyExists){
+      this.errors.push("You are already following this user.");
+    }
+  }
+  if(action == "delete"){
+    if(!doesFollowAlreadyExists){
+      this.errors.push("You cannot stop following someone you do not already follow.");
+    }
+  }
+
+  // should not be able to follow yourself
+  if (this.followedId.equals(this.authorId)){
+    this.errors.push("You cannot follow yourself.");
+  }
 }
 
-
+Follow.isVisitorFollowing = async function(followedId, visitorId){
+  let followDoc = await followsCollection.findOne({followedId: followedId, authorId: new ObjectID(visitorId)});
+  if(followDoc){
+    return true;
+  } else {
+    return false;
+  }
+}
 
 module.exports = Follow;

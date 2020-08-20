@@ -1,5 +1,20 @@
 const User = require('../models/User');
 const Post = require('../models/Post');
+const Follow = require('../models/Follow');
+
+exports.sharedProfileData = async function(req, res, next){
+  let isVisitorsProfile = false;
+  let isFollowing = false;
+  if(req.session.user){
+    isVisitorsProfile = req.profileUser._id.equals(req.session.user._id);
+    isFollowing = await Follow.isVisitorFollowing(req.profileUser._id, req.visitorId);
+  }
+
+  req.isVisitorsProfile = isVisitorsProfile;
+  req.isFollowing = isFollowing;
+  next();
+}
+
 
 exports.login = function(req, res){
   let user = new User(req.body);
@@ -75,10 +90,11 @@ exports.profilePostsScreen = function(req, res){
     res.render('profile', {
       posts: posts,
       profileUsername: req.profileUser.username,
-      profileAvatar: req.profileUser.avatar
+      profileAvatar: req.profileUser.avatar,
+      isFollowing: req.isFollowing,
+      isVisitorsProfile: req.isVisitorsProfile
     });
   }).catch(function(){
     res.render('404');
   });
-
 }
